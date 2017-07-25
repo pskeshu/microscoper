@@ -5,9 +5,9 @@ CellSense .vsi format, into a more commonly used TIFF format.
 Images are bundled together according to their channels. 
 
 This code is used internally in SCB Lab, TCIS, TIFR-H.
-You're free to modify it and distribute it. 
+You're free to modify it and distribute it.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 import os
 import collections
 import bioformats
