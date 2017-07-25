@@ -36,15 +36,20 @@ def get_files(directory, keyword):
     return file_list
 
 
-def get_channel(path, channel):
-    meta = bioformats.get_omexml_metadata(path)
+def get_channel(filename, channel):
+    """Read the meta data and return the channel name/filter
+    name for a certain int channel.
+    """
+    meta = bioformats.get_omexml_metadata(filename)
     o = bioformats.omexml.OMEXML(meta)
+
     try:
         channel_name = o.image().Pixels.Channel(channel).Name
     except:
-        return None
+        return
+
     if channel_name is None:
-        return None
+        return
     return channel_name.replace("/", "_")
 
 
