@@ -35,7 +35,7 @@ def get_files(directory, keyword):
             filename = os.path.join(path, name)
             if keyword in filename:
                 file_list.append(filename)
-    return file_list
+    return sorted(file_list)
 
 
 def get_channel(filename, channel):
