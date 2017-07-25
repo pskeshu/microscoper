@@ -6,30 +6,33 @@ Images are bundled together according to their channels.
 
 This code is used internally in SCB Lab, TCIS, TIFR-H.
 You're free to modify it and distribute it. 
-
-TO DO:
-1. argparse.
 """
 from __future__ import unicode_literals
 import os
 import collections
 import bioformats
 import javabridge
-import numpy
+import numpy as np
 import tifffile
 
-__version__ = "0.0.1a"
-__author__ = "Kesavan Subburam"
-__email__ = "pskesavan@tifrh.res.in"
 
-
-def get_files(directory):
+def get_files(directory, keyword):
     """ Returns all the files in the given directory 
-    and subdirectories."""
+    and subdirectories, filtering with the keyword.
+
+    Usage:
+        >>> all_vsi_files = get_files(".", ".vsi")
+
+        This will have all the .vsi files in the current
+        directory and all other directories in the current
+        directory.
+    """
     file_list = []
     for path, subdirs, files in os.walk(directory):
         for name in files:
-            file_list.append(os.path.join(path, name))
+            filename = os.path.join(path, name)
+            if keyword in filename:
+                file_list.append(filename)
     return file_list
 
 
@@ -79,9 +82,12 @@ def save_images(images, save_directory):
             tif.save(images[channel])
 
 if __name__ == "__main__":
-    files = [_ for _ in get_files(".") if ".vsi" in _]
+
+    files = get_files(".", ".vsi")
+
     if 0 == len(files):
         print "No .vsi files found."
+
     else:
         javabridge.start_vm(class_path=bioformats.JARS, run_headless=True)
         for path in files:
