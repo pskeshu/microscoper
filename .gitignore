@@ -1,3 +1,5 @@
 images/*
 *.pyc
 microscoper.egg-info/*
+build/*
+dist/*

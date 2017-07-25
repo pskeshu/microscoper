@@ -5,13 +5,13 @@ Microscoper is a simple wrapper for `python-bioformats`, with added features, su
 
 To install the package with `pip`
 
-    $ pip install microscoper
+    pip install microscoper
 
 Or install from the latest development repository:
 
-    $ git clone https://github.com/pskeshu/microscoper.git
-    $ cd microscoper
-    $ pip install -e .
+    git clone https://github.com/pskeshu/microscoper.git
+    cd microscoper
+    pip install -e .
 
 
 Usage
