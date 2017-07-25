@@ -14,6 +14,8 @@ import bioformats
 import javabridge
 import numpy as np
 import tifffile
+import tqdm
+from .args import arguments
 
 
 def get_files(directory, keyword):
@@ -62,17 +64,19 @@ def read_images(path):
         z_total = reader.rdr.getSizeZ()
         c_total = reader.rdr.getSizeC()
         t_total = reader.rdr.getSizeT()
-        for time in xrange(t_total):
-            for z in xrange(z_total):
-                for channel in xrange(c_total):
+        for time in range(t_total):
+            for z in range(z_total):
+                for channel in range(c_total):
                     image = reader.read(c=channel,
-                                        z=z, t=time, rescale=False)
+                                        z=z,
+                                        t=time,
+                                        rescale=False)
                     channel_name = get_channel(path, channel)
                     if channel_name is None:
                         channel_name = str(channel)
                     images[channel_name].append(image)
     for lists in images:
-        images[lists] = numpy.asarray(images[lists])
+        images[lists] = np.asarray(images[lists])
     return images
 
 
@@ -86,20 +90,27 @@ def save_images(images, save_directory):
                                  bigtiff=False) as tif:
             tif.save(images[channel])
 
-if __name__ == "__main__":
 
-    files = get_files(".", ".vsi")
+def run():
+    a = arguments()
+    files = get_files(a.f, a.k)
 
     if 0 == len(files):
-        print "No .vsi files found."
+        print("No {} file found.".format(a.k))
+        exit()
 
-    else:
-        javabridge.start_vm(class_path=bioformats.JARS, run_headless=True)
-        for path in files:
-            file_location = os.path.dirname(os.path.realpath(path))
-            filename = path.split("/")[-1].split(".vsi")[0]
-            filename = "_%s_" % (filename)
-            save_directory = "%s/%s" % (file_location, filename)
-            images = read_images(path)
-            save_images(images, save_directory)
-        javabridge.kill_vm()
+    if a.list:
+        print("Total files found:", len(files))
+        print(files)
+        exit()
+
+    javabridge.start_vm(class_path=bioformats.JARS)
+    bioformats.init_logger()
+    for path in tqdm.tqdm(files):
+        file_location = os.path.dirname(os.path.realpath(path))
+        filename = path.split("/")[-1].split(".vsi")[0]
+        filename = "_%s_" % (filename)
+        save_directory = "%s/%s" % (file_location, filename)
+        images = read_images(path)
+        save_images(images, save_directory)
+    javabridge.kill_vm()
