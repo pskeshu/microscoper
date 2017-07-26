@@ -10,4 +10,5 @@ setup(name='microscoper',
       install_requires=['numpy>=1.13.1',
                         'tifffile>=0.12.1',
                         'tqdm>=4.11.2'],
+      license='MIT',
       zip_safe=False)
