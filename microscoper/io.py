@@ -100,8 +100,11 @@ def run():
         exit()
 
     if a.list:
+        for f in files:
+            print(f)
+        print("======================")
         print("Total files found:", len(files))
-        print(files)
+        print("======================")
         exit()
 
     javabridge.start_vm(class_path=bioformats.JARS)
