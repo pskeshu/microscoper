@@ -36,15 +36,15 @@ Navigate to any folder which has microscope images in bioformats supported forma
 
 The `-f path/to/images` flag specifies the directory in which to look for files that have the keyword specified by `-k .vsi`. By default, `-f` looks into all directories under the specified directory. So, if you have a directory structure like this:
 
-   |-cells
-   |---control
-   |-----image_1.vsi
-   |-----image_2.vsi
-   |-----40X
-   |-------image_3.vsi
-   |---treatment
-   |-----image_1.vsi
-   |-----image_2.vsi
+    |-cells
+    |---control
+    |-----image_1.vsi
+    |-----image_2.vsi
+    |-----40X
+    |-------image_3.vsi
+    |---treatment
+    |-----image_1.vsi
+    |-----image_2.vsi
 
 If you input `python -m microscoper -f cells/`, all the images in the subdirectories will be taken as the input. Note that the `-k` argument is optional if you're working with .vsi files, as it takes `-k .vsi` by default. 
 
