@@ -1,7 +1,10 @@
-Microscoper
-===========
+# Microscoper
 
 Microscoper is a simple wrapper for `python-bioformats`, with added features, such as saving images based on the filters used while acquiring them (For example: DAPI.tif for a Z stack of images acquired using the DAPI channel).
+
+## Installation
+
+### python-bioformats
 
 This package requires a forked `python-bioformats` from `pskeshu/python-bioformats`.
 
@@ -15,6 +18,8 @@ You can also install the forked `python-bioformats` by cloning the repository fr
     cd python-bioformats
     git checkout scblab
     python setup.py install
+    
+### microscoper
 
 To install `microscoper` with `pip`
 
@@ -27,8 +32,7 @@ Or install the latest development version from github:
     pip install -e .
 
 
-Usage
------
+## Usage
 
 Navigate to any folder which has microscope images in bioformats supported format, and in the terminal run the following command:
 
@@ -67,23 +71,17 @@ In case you want to make sure the right files are being converted, you can initi
 
 Dry run will exit without converting the supported files to TIFF.
 
-
-Note
-----
+## Note
 
 This program has only been tested with Olympus CellSense format, .vsi, but can potentially be used with any bioformats supported file format. Supply the file format with the  `-k` argument.
 
 If you want `microscoper` to work with your favourite proprietary image format, send me a sample image.
 
-
-Future Plans
-------------
+## Future Plans
 
 * Input files pattern matching with wildcards and regular expressions.
 * Write meta data to text files, or directly to the TIFF files.
 
-
-Fork
-----
+## Fork
 
 Feel free to fork this repository to modify the program as you seem fit, or submit push requests.
