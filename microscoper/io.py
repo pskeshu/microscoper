@@ -43,6 +43,7 @@ def get_channel(filename, channel):
     name for a certain int channel.
     """
     meta = bioformats.get_omexml_metadata(filename)
+    meta.encode("utf8") # Python2 support
     o = bioformats.omexml.OMEXML(meta)
 
     try:
