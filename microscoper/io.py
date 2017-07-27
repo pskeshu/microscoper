@@ -38,16 +38,19 @@ def get_files(directory, keyword):
     return sorted(file_list)
 
 
-def get_channel(filename, channel):
-    """Read the meta data and return the channel name/filter
-    name for a certain int channel.
+def get_metadata(filename):
+    """Read the meta data and return the metadata object.
     """
     meta = bioformats.get_omexml_metadata(filename)
-    meta.encode("utf8") # Python2 support
-    o = bioformats.omexml.OMEXML(meta)
+    meta.encode("utf8")  # Python2 support
+    metadata = bioformats.omexml.OMEXML(meta)
+    return metadata
 
+
+def get_channel(metadata, channel):
+    """Return the channel name from the metadata object"""
     try:
-        channel_name = o.image().Pixels.Channel(channel).Name
+        channel_name = metadata.image().Pixels.Channel(channel).Name
     except:
         return
 
@@ -62,33 +65,44 @@ def read_images(path):
     of images as values."""
     with bioformats.ImageReader(path) as reader:
         images = collections.defaultdict(list)
-        z_total = reader.rdr.getSizeZ()
+
         c_total = reader.rdr.getSizeC()
+        z_total = reader.rdr.getSizeZ()
         t_total = reader.rdr.getSizeT()
-        for time in range(t_total):
-            for z in range(z_total):
-                for channel in range(c_total):
+
+        if 1 not in [z_total, t_total]:
+            raise TypeError("Only 4D images are currently supported.")
+
+        metadata = get_metadata(path)
+
+        for channel in tqdm.tqdm(range(c_total), "C"):
+            channel_name = get_channel(metadata, channel)
+            for time in tqdm.tqdm(range(t_total), "T"):
+                for z in tqdm.tqdm(range(z_total), "Z"):
                     image = reader.read(c=channel,
                                         z=z,
                                         t=time,
                                         rescale=False)
-                    channel_name = get_channel(path, channel)
+
                     if channel_name is None:
                         channel_name = str(channel)
                     images[channel_name].append(image)
+
     for lists in images:
         images[lists] = np.asarray(images[lists])
+
     return images
 
 
-def save_images(images, save_directory):
+def save_images(images, save_directory, bigtiff=False):
     """Saves the images as TIFs with channel numbers
     as the filename."""
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
+
     for channel in images:
-        with tifffile.TiffWriter(save_directory+"/"+str(channel)+".tif",
-                                 bigtiff=False) as tif:
+        filename = save_directory+"/"+str(channel)+".tif"
+        with tifffile.TiffWriter(filename, bigtiff=bigtiff) as tif:
             tif.save(images[channel])
 
 
@@ -108,7 +122,7 @@ def run():
         print("======================")
         exit()
 
-    javabridge.start_vm(class_path=bioformats.JARS)
+    javabridge.start_vm(class_path=bioformats.JARS, max_heap_size="2G")
     bioformats.init_logger()
     for path in tqdm.tqdm(files):
         file_location = os.path.dirname(os.path.realpath(path))
