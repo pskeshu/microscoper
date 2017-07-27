@@ -4,23 +4,6 @@ Microscoper is a simple wrapper for `python-bioformats`, with added features, su
 
 ## Installation
 
-### python-bioformats
-
-This package requires a forked `python-bioformats` from `pskeshu/python-bioformats`.
-
-This can be installed directly with `pip`, and this is an essential step before installing `microscoper`.
-
-    pip install git+http://github.com/pskeshu/python-bioformats.git@1.1.0s#egg=python-bioformats-1.1.0s
-
-You can also install the forked `python-bioformats` by cloning the repository from github.
-
-    git clone https://github.com/pskeshu/python-bioformats.git
-    cd python-bioformats
-    git checkout scblab
-    python setup.py install
-    
-### microscoper
-
 To install `microscoper` with `pip`
 
     pip install microscoper

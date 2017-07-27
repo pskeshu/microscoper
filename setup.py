@@ -9,6 +9,7 @@ setup(name='microscoper',
       packages=['microscoper'],
       install_requires=['numpy>=1.13.1',
                         'tifffile>=0.12.1',
-                        'tqdm>=4.11.2'],
+                        'tqdm>=4.11.2',
+                        'python-bioformats>=1.1.0'],
       license='MIT',
       zip_safe=False)
