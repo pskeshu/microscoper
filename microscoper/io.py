@@ -42,7 +42,6 @@ def get_metadata(filename):
     """Read the meta data and return the metadata object.
     """
     meta = bioformats.get_omexml_metadata(filename)
-    meta.encode("utf8")  # Python2 support
     metadata = bioformats.omexml.OMEXML(meta)
     return metadata
 
