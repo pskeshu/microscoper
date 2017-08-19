@@ -106,6 +106,17 @@ def save_images(images, save_directory, bigtiff=False):
             tif.save(images[channel])
 
 
+def init_logger():
+    rootLoggerName = javabridge.get_static_field("org/slf4j/Logger",
+                                                 "ROOT_LOGGER_NAME", "Ljava/lang/String;")
+    rootLogger = javabridge.static_call("org/slf4j/LoggerFactory",
+                                        "getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;", rootLoggerName)
+    logLevel = javabridge.get_static_field("ch/qos/logback/classic/Level",
+                                           "WARN", "Lch/qos/logback/classic/Level;")
+    javabridge.call(rootLogger, "setLevel", "(Lch/qos/logback/classic/Level;)V",
+                    logLevel)
+
+
 def run():
     a = arguments()
     files = get_files(a.f, a.k)
@@ -123,7 +134,9 @@ def run():
         exit()
 
     javabridge.start_vm(class_path=bioformats.JARS, max_heap_size="2G")
-    bioformats.init_logger()
+
+    init_logger()
+
     for path in tqdm.tqdm(files):
         file_location = os.path.dirname(os.path.realpath(path))
         filename = path.split("/")[-1].split(".vsi")[0]
