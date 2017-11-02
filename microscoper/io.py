@@ -10,10 +10,10 @@ You're free to modify it and distribute it.
 from __future__ import unicode_literals, print_function
 import os
 import collections
-import bioformats
-import javabridge
+import bioformats as bf
+import javabridge as jb
 import numpy as np
-import tifffile
+import tifffile as tf
 import tqdm
 from .args import arguments
 
@@ -41,8 +41,8 @@ def get_files(directory, keyword):
 def get_metadata(filename):
     """Read the meta data and return the metadata object.
     """
-    meta = bioformats.get_omexml_metadata(filename)
-    metadata = bioformats.omexml.OMEXML(meta)
+    meta = bf.get_omexml_metadata(filename)
+    metadata = bf.omexml.OMEXML(meta)
     return metadata
 
 
@@ -62,7 +62,7 @@ def read_images(path):
     """Reads images from the .vsi and associated files.
     Returns a dictionary with key as channel, and list
     of images as values."""
-    with bioformats.ImageReader(path) as reader:
+    with bf.ImageReader(path) as reader:
         images = collections.defaultdict(list)
 
         c_total = reader.rdr.getSizeC()
@@ -93,27 +93,44 @@ def read_images(path):
     return images
 
 
-def save_images(images, save_directory, bigtiff=False):
-    """Saves the images as TIFs with channel numbers
-    as the filename."""
+def save_images(images, save_directory, big=False, save_separate=False):
+    """Saves the images as TIFs with channel name as the filename.
+    Channel names are saved as numbers when names are not available."""
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
 
-    for channel in images:
-        filename = save_directory+"/"+str(channel)+".tif"
-        with tifffile.TiffWriter(filename, bigtiff=bigtiff) as tif:
-            tif.save(images[channel])
+    if save_separate:
+        for channel in images:
+            filename = save_directory+"/"+str(channel)+"_{}.tif"
+            for num, image in enumerate(images[channel]):
+                with tf.TiffWriter(filename.format(num+1), bigtiff=big) as f:
+                    f.save(image)
+
+    else:
+        for channel in images:
+            filename = save_directory+"/"+str(channel)+".tif"
+            with tf.TiffWriter(filename, bigtiff=big) as f:
+                f.save(images[channel])
 
 
 def init_logger():
-    rootLoggerName = javabridge.get_static_field("org/slf4j/Logger",
-                                                 "ROOT_LOGGER_NAME", "Ljava/lang/String;")
-    rootLogger = javabridge.static_call("org/slf4j/LoggerFactory",
-                                        "getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;", rootLoggerName)
-    logLevel = javabridge.get_static_field("ch/qos/logback/classic/Level",
-                                           "WARN", "Lch/qos/logback/classic/Level;")
-    javabridge.call(rootLogger, "setLevel", "(Lch/qos/logback/classic/Level;)V",
-                    logLevel)
+    rootLoggerName = jb.get_static_field("org/slf4j/Logger",
+                                         "ROOT_LOGGER_NAME",
+                                         "Ljava/lang/String;")
+
+    rootLogger = jb.static_call("org/slf4j/LoggerFactory",
+                                "getLogger",
+                                "(Ljava/lang/String;)Lorg/slf4j/Logger;",
+                                rootLoggerName)
+
+    logLevel = jb.get_static_field("ch/qos/logback/classic/Level",
+                                   "WARN",
+                                   "Lch/qos/logback/classic/Level;")
+
+    jb.call(rootLogger,
+            "setLevel",
+            "(Lch/qos/logback/classic/Level;)V",
+            logLevel)
 
 
 def run():
@@ -132,7 +149,7 @@ def run():
         print("======================")
         exit()
 
-    javabridge.start_vm(class_path=bioformats.JARS, max_heap_size="2G")
+    jb.start_vm(class_path=bf.JARS, max_heap_size="2G")
 
     init_logger()
 
@@ -142,5 +159,5 @@ def run():
         filename = "_%s_" % (filename)
         save_directory = "%s/%s" % (file_location, filename)
         images = read_images(path)
-        save_images(images, save_directory)
-    javabridge.kill_vm()
+        save_images(images, save_directory, save_separate=a.separate)
+    jb.kill_vm()

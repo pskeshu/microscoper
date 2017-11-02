@@ -16,5 +16,10 @@ def arguments():
                         help="Show files that are to be opened,\
                         without opening them.",
                         action="store_true")
+    parser.add_argument("-s",
+                        "--separate",
+                        help="Images from the same channel won't\
+                        be grouped as stacks.",
+                        action="store_true")
     args = parser.parse_args()
     return args
