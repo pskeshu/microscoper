@@ -101,19 +101,19 @@ def save_images(images, save_directory, big=False, save_separate=False):
 
     if save_separate:
         for channel in images:
-            filename = save_directory+"/"+str(channel)+"_{}.tif"
+            filename = save_directory + str(channel) + "_{}.tif"
             for num, image in enumerate(images[channel]):
                 with tf.TiffWriter(filename.format(num+1), bigtiff=big) as f:
                     f.save(image)
 
     else:
         for channel in images:
-            filename = save_directory+"/"+str(channel)+".tif"
+            filename = save_directory + str(channel) + ".tif"
             with tf.TiffWriter(filename, bigtiff=big) as f:
                 f.save(images[channel])
 
 
-def init_logger():
+def _init_logger():
     rootLoggerName = jb.get_static_field("org/slf4j/Logger",
                                          "ROOT_LOGGER_NAME",
                                          "Ljava/lang/String;")
@@ -134,14 +134,17 @@ def init_logger():
 
 
 def run():
-    a = arguments()
-    files = get_files(a.f, a.k)
+    # Add file extensions to this to be able to read different file types.
+    extensions = [".vsi"]
+
+    arg = arguments()
+    files = get_files(arg.f, arg.k)
 
     if 0 == len(files):
-        print("No {} file found.".format(a.k))
+        print("No file matching *{}* keyword.".format(arg.k))
         exit()
 
-    if a.list:
+    if arg.list:
         for f in files:
             print(f)
         print("======================")
@@ -151,13 +154,14 @@ def run():
 
     jb.start_vm(class_path=bf.JARS, max_heap_size="2G")
 
-    init_logger()
+    _ = _init_logger()
 
     for path in tqdm.tqdm(files):
+        if not any(_ in path for _ in extensions):
+            continue
         file_location = os.path.dirname(os.path.realpath(path))
-        filename = path.split("/")[-1].split(".vsi")[0]
-        filename = "_%s_" % (filename)
-        save_directory = "%s/%s" % (file_location, filename)
+        filename = os.path.splitext(os.path.basename(path))[0]
+        save_directory = file_location + "/_{}_/".format(filename)
         images = read_images(path)
-        save_images(images, save_directory, save_separate=a.separate)
+        save_images(images, save_directory, save_separate=arg.separate)
     jb.kill_vm()
