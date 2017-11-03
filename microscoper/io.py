@@ -74,8 +74,12 @@ def read_images(path):
 
         metadata = get_metadata(path)
 
-        for channel in tqdm.tqdm(range(c_total), "C"):
+        pbar_c = tqdm.tqdm(range(c_total))
+
+        for channel in pbar_c:
             channel_name = get_channel(metadata, channel)
+            pbar_c.set_description(channel_name)
+
             for time in tqdm.tqdm(range(t_total), "T"):
                 for z in tqdm.tqdm(range(z_total), "Z"):
                     image = reader.read(c=channel,
@@ -85,6 +89,7 @@ def read_images(path):
 
                     if channel_name is None:
                         channel_name = str(channel)
+
                     images[channel_name].append(image)
 
     for lists in images:
@@ -153,15 +158,20 @@ def run():
         exit()
 
     jb.start_vm(class_path=bf.JARS, max_heap_size="2G")
+    logger = _init_logger()
 
-    _ = _init_logger()
+    pbar_files = tqdm.tqdm(files)
 
-    for path in tqdm.tqdm(files):
+    for path in pbar_files:
         if not any(_ in path for _ in extensions):
             continue
+
         file_location = os.path.dirname(os.path.realpath(path))
         filename = os.path.splitext(os.path.basename(path))[0]
         save_directory = file_location + "/_{}_/".format(filename)
+
+        pbar_files.set_description(filename)
+
         images = read_images(path)
         save_images(images, save_directory, save_separate=arg.separate)
     jb.kill_vm()
