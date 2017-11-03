@@ -170,7 +170,7 @@ def run():
         filename = os.path.splitext(os.path.basename(path))[0]
         save_directory = file_location + "/_{}_/".format(filename)
 
-        pbar_files.set_description(filename)
+        pbar_files.set_description("..." + path[-15:])
 
         images = read_images(path)
         save_images(images, save_directory, save_separate=arg.separate)
