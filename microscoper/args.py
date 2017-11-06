@@ -21,5 +21,9 @@ def arguments():
                         help="Images from the same channel won't\
                         be grouped as stacks.",
                         action="store_true")
+    parser.add_argument("-b",
+                        "--big",
+                        help="Save as big TIFF",
+                        action="store_true")
     args = parser.parse_args()
     return args

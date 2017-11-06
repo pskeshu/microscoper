@@ -173,5 +173,6 @@ def run():
         pbar_files.set_description("..." + path[-15:])
 
         images = read_images(path)
-        save_images(images, save_directory, save_separate=arg.separate)
+        save_images(images, save_directory, big=arg.big,
+                    save_separate=arg.separate)
     jb.kill_vm()
