@@ -58,26 +58,32 @@ def get_channel(metadata, channel):
     return channel_name.replace("/", "_")
 
 
-def read_images(path):
+def read_images(path, save_directory, big, save_separate):
     """Reads images from the .vsi and associated files.
     Returns a dictionary with key as channel, and list
     of images as values."""
     with bf.ImageReader(path) as reader:
-        images = collections.defaultdict(list)
-
+        # Shape of the data
         c_total = reader.rdr.getSizeC()
         z_total = reader.rdr.getSizeZ()
         t_total = reader.rdr.getSizeT()
 
+        # Since we don't support hyperstacks yet...
         if 1 not in [z_total, t_total]:
             raise TypeError("Only 4D images are currently supported.")
 
         metadata = get_metadata(path)
 
+        # This is so we can manually set a description down below.
         pbar_c = tqdm.tqdm(range(c_total))
 
         for channel in pbar_c:
+            images = []
+            # Get the channel name, so we can name the file after this.
             channel_name = get_channel(metadata, channel)
+
+            # Update the channel progress bar description with the
+            # channel name.
             pbar_c.set_description(channel_name)
 
             for time in tqdm.tqdm(range(t_total), "T"):
@@ -87,38 +93,47 @@ def read_images(path):
                                         t=time,
                                         rescale=False)
 
+                    # If there's no metadata on channel name, save channels
+                    # with numbers,starting from 0.
                     if channel_name is None:
                         channel_name = str(channel)
 
-                    images[channel_name].append(image)
+                    images.append(image)
 
-    for lists in images:
-        images[lists] = np.asarray(images[lists])
+            save_images(np.asarray(images), channel_name, save_directory, big,
+                        save_separate)
 
-    return images
+    return
 
 
-def save_images(images, save_directory, big=False, save_separate=False):
+def save_images(images, channel, save_directory, big=False,
+                save_separate=False):
     """Saves the images as TIFs with channel name as the filename.
     Channel names are saved as numbers when names are not available."""
+
+    # Make the output directory, if it doesn't alredy exist.
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
 
+    # Save a file for every image in a stack.
     if save_separate:
-        for channel in images:
-            filename = save_directory + str(channel) + "_{}.tif"
-            for num, image in enumerate(images[channel]):
-                with tf.TiffWriter(filename.format(num+1), bigtiff=big) as f:
-                    f.save(image)
+        filename = save_directory + str(channel) + "_{}.tif"
+        for num, image in enumerate(images):
+            with tf.TiffWriter(filename.format(num+1), bigtiff=big) as f:
+                f.save(image)
 
+    # Save a single .tif file for all the images in a channel.
     else:
-        for channel in images:
-            filename = save_directory + str(channel) + ".tif"
-            with tf.TiffWriter(filename, bigtiff=big) as f:
-                f.save(images[channel])
+        filename = save_directory + str(channel) + ".tif"
+        with tf.TiffWriter(filename, bigtiff=big) as f:
+            f.save(images)
 
 
 def _init_logger():
+    """This is so that Javabridge doesn't spill out a lot of DEBUG messages
+    during runtime.
+    From CellProfiler/python-bioformats.
+    """
     rootLoggerName = jb.get_static_field("org/slf4j/Logger",
                                          "ROOT_LOGGER_NAME",
                                          "Ljava/lang/String;")
@@ -172,7 +187,6 @@ def run():
 
         pbar_files.set_description("..." + path[-15:])
 
-        images = read_images(path)
-        save_images(images, save_directory, big=arg.big,
+        read_images(path, save_directory, big=arg.big,
                     save_separate=arg.separate)
     jb.kill_vm()
