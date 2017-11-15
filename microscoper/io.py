@@ -1,8 +1,8 @@
-"""Microscoper is a wrapper around bioformats using a forked 
-python-bioformats to extract the raw images from Olympus IX83 
+"""Microscoper is a wrapper around bioformats using a forked
+python-bioformats to extract the raw images from Olympus IX83
 CellSense .vsi format, into a more commonly used TIFF format.
 
-Images are bundled together according to their channels. 
+Images are bundled together according to their channels.
 
 This code is used internally in SCB Lab, TCIS, TIFR-H.
 You're free to modify it and distribute it.
@@ -16,10 +16,11 @@ import numpy as np
 import tifffile as tf
 import tqdm
 from .args import arguments
+import xml.dom.minidom
 
 
 def get_files(directory, keyword):
-    """ Returns all the files in the given directory 
+    """ Returns all the files in the given directory
     and subdirectories, filtering with the keyword.
 
     Usage:
@@ -103,7 +104,7 @@ def read_images(path, save_directory, big, save_separate):
             save_images(np.asarray(images), channel_name, save_directory, big,
                         save_separate)
 
-    return
+    return metadata
 
 
 def save_images(images, channel, save_directory, big=False,
@@ -127,6 +128,14 @@ def save_images(images, channel, save_directory, big=False,
         filename = save_directory + str(channel) + ".tif"
         with tf.TiffWriter(filename, bigtiff=big) as f:
             f.save(images)
+
+
+def save_metadata(metadata, save_directory):
+    data = xml.dom.minidom.parseString(metadata.to_xml())
+    pretty_xml_as_string = data.toprettyxml()
+
+    with open(save_directory + "metadata.xml", "w") as xmlfile:
+        xmlfile.write(pretty_xml_as_string)
 
 
 def _init_logger():
@@ -187,6 +196,19 @@ def run():
 
         pbar_files.set_description("..." + path[-15:])
 
-        read_images(path, save_directory, big=arg.big,
-                    save_separate=arg.separate)
+        # If the user wants to store meta data for existing data,
+        # the user may pass -om or --onlymetadata argument which
+        # will bypass read_images() and get metadata on its own.
+
+        if arg.onlymetadata:
+            metadata = get_metadata(path)
+
+        # The default behaviour is to store the files with the
+        # metadata.
+        else:
+            metadata = read_images(path, save_directory, big=arg.big,
+                                   save_separate=arg.separate)
+
+        save_metadata(metadata, save_directory)
+
     jb.kill_vm()
