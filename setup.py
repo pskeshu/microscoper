@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="microscoper",
-      version="0.3.0",
+      version="0.3.1",
       description="A simple wrapper for python-bioformats to convert \
       .vsi CellSense format to TIFF.",
       url="https://www.github.com/pskeshu/microscoper",
