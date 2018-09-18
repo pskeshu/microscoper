@@ -19,7 +19,7 @@ Or install the latest development version from github:
 
 Navigate to any folder which has microscope images in bioformats supported format, and in the terminal run the following command:
 
-    python -m microscoper -f . -k .vsi
+    microscoper -f . -k .vsi
 
 The `-f path/to/images` flag specifies the directory in which to look for files that have the keyword specified by `-k .vsi`. By default, `-f` looks into all directories under the specified directory. So, if you have a directory structure like this:
 
@@ -33,16 +33,16 @@ The `-f path/to/images` flag specifies the directory in which to look for files 
     |-----image_1.vsi
     |-----image_2.vsi
 
-If you input `python -m microscoper -f cells/`, all the images in the subdirectories will be taken as the input. Note that the `-k` argument is optional if you're working with .vsi files, as it takes `-k .vsi` by default. 
+If you input `microscoper -f cells/`, all the images in the subdirectories will be taken as the input. Note that the `-k` argument is optional if you're working with .vsi files, as it takes `-k .vsi` by default. 
 
-The defaults for `-f` is `.` or the current directory. If the working directory is `/home/user/data/exp/cells` for the directory tree given above, running `python -m microscoper` alone is sufficient.
+The defaults for `-f` is `.` or the current directory. If the working directory is `/home/user/data/exp/cells` for the directory tree given above, running `microscoper` alone is sufficient.
 
 In case you want to make sure the right files are being converted, you can initiate a dry run by passing an addition `--list` argument. For the above directory tree, the dry run will return something like this:
     
     $ pwd
         /home/user/data/exp/cells
     
-    $ python -m microscoper --list
+    $ microscoper --list
         ./control/40X/image_3.vsi
         ./control/image_1.vsi
         ./control/image_2.vsi
