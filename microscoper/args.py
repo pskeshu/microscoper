@@ -30,6 +30,11 @@ def arguments():
                         help="Read and save the metadata without\
                         saving the images.",
                         action="store_true")
+    parser.add_argument("-m",
+                        "--memory",
+                        help="Set the memory limit for Java to use. E.g. -m 8G",
+                        default="2G",
+                        action="store_true")
 
     args = parser.parse_args()
     return args

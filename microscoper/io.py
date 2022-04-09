@@ -8,15 +8,17 @@ This code is used internally in SCB Lab, TCIS, TIFR-H.
 You're free to modify it and distribute it.
 """
 from __future__ import unicode_literals, print_function
+
 import os
-import collections
+import xml.dom.minidom
+
 import bioformats as bf
 import javabridge as jb
 import numpy as np
 import tifffile as tf
 import tqdm
+
 from .args import arguments
-import xml.dom.minidom
 
 
 def get_files(directory, keyword):
@@ -51,7 +53,7 @@ def get_channel(metadata, channel):
     """Return the channel name from the metadata object"""
     try:
         channel_name = metadata.image().Pixels.Channel(channel).Name
-    except:
+    except AttributeError:
         return
 
     if channel_name is None:
@@ -120,14 +122,14 @@ def save_images(images, channel, save_directory, big=False,
     if save_separate:
         filename = save_directory + str(channel) + "_{}.tif"
         for num, image in enumerate(images):
-            with tf.TiffWriter(filename.format(num+1), bigtiff=big) as f:
-                f.save(image)
+            with tf.TiffWriter(filename.format(num + 1), bigtiff=big) as f:
+                f.write(image)
 
     # Save a single .tif file for all the images in a channel.
     else:
         filename = save_directory + str(channel) + ".tif"
         with tf.TiffWriter(filename, bigtiff=big) as f:
-            f.save(images)
+            f.write(images)
 
 
 def save_metadata(metadata, save_directory):
@@ -181,8 +183,7 @@ def run():
         print("======================")
         exit()
 
-    jb.start_vm(class_path=bf.JARS, max_heap_size="2G")
-    logger = _init_logger()
+    jb.start_vm(class_path=bf.JARS, max_heap_size=arg.m)
 
     pbar_files = tqdm.tqdm(files)
 
