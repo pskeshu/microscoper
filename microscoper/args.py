@@ -12,6 +12,10 @@ def arguments():
     parser.add_argument("-k",
                         help="Image keyword",
                         default=".vsi")
+    parser.add_argument("-m",
+                        "--memory",
+                        help="Set the memory limit for Java to use. E.g. -m 8G",
+                        default="2G")
     parser.add_argument("--list",
                         help="Show files that are to be opened,\
                         without opening them.",
@@ -29,11 +33,6 @@ def arguments():
                         "--onlymetadata",
                         help="Read and save the metadata without\
                         saving the images.",
-                        action="store_true")
-    parser.add_argument("-m",
-                        "--memory",
-                        help="Set the memory limit for Java to use. E.g. -m 8G",
-                        default="2G",
                         action="store_true")
 
     args = parser.parse_args()
